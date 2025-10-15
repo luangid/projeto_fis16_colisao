@@ -1,0 +1,2 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/User/Documents/aprendendo python/manim/fis16/my_project/media/videos/480p15/partial_movie_files/CreateCircle/1185818338_3120274435_223132457.mp4'
