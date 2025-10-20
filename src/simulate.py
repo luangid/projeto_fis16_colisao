@@ -1,6 +1,11 @@
+import matplotlib as plt
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 import scipy.stats as stats
 from scipy.integrate import solve_ivp
 from scipy import interpolate
+
 import numpy as np
 from types import SimpleNamespace
 
@@ -57,3 +62,40 @@ def get_sol(file_path: str) -> SimpleNamespace:
     sol.y = sol.x
 
     return sol
+
+def plot_1_graph(t_mola = None, yA_mola = None, yB_mola = None, t_sim = None, y_sim_a = None, y_sim_b = None):
+    plt.figure(figsize=(10, 6))
+    plt.plot(t_mola, yA_mola, label="Experimento Mola - BLOCA A", color="tab:blue")
+    plt.plot(t_mola, yB_mola, label="Experimento Mola - BLOCO B", color="tab:red")
+    plt.plot(t_sim, y_sim_a, label="Simulalção Mola - BLOCA A", color="tab:blue", linestyle='dashed')
+    plt.plot(t_sim, y_sim_b, label="Simulalção Mola - BLOCO B", color="tab:red", linestyle='dashed')
+    plt.xlabel("Tempo (s)")
+    plt.ylabel("Posição (m)")
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_2_graphs(t_mola = None, yA_mola = None, yB_mola = None, t_sim = None, y_sim_a = None, y_sim_b = None):
+    fig, axs = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+
+    #axs[0].plot(t, yA, label="Bloco A", color="tab:blue")
+    axs[0].plot(t_mola, yA_mola, label="Experimento Mola - BLOCA A", color="tab:blue")
+    axs[0].plot(t_mola, yB_mola, label="Experimento Mola - BLOCO B", color="tab:red")
+    axs[0].set_xlabel("Tempo (s)")
+    axs[0].set_ylabel("Posição (m)")
+    axs[0].legend()
+    axs[0].grid(True)
+
+
+    #axs[0].plot(t, yA, label="Bloco A", color="tab:blue")
+    axs[1].plot(t_sim, y_sim_a, label="Simulalção Mola - BLOCA A", color="tab:blue")
+    axs[1].plot(t_sim, y_sim_b, label="Simulalção Mola - BLOCO B", color="tab:red")
+    axs[1].set_xlabel("Tempo (s)")
+    axs[1].set_ylabel("Posição (m)")
+    axs[1].legend()
+    axs[1].grid(True)
+
+    plt.tight_layout()
+    plt.show()

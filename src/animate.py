@@ -5,7 +5,6 @@ class CreateScene(Scene):
         zoom = 10
         
         centralize = len_pista*zoom/2
-
         
         self.len_bloco_a = len_bloco_a * zoom 
         self.len_bloco_b = len_bloco_b * zoom
@@ -16,7 +15,6 @@ class CreateScene(Scene):
         self.xA = xA * zoom + self.len_bloco_a / 2 - centralize
         self.xB = xB * zoom - self.len_bloco_b / 2 - centralize
 
-        # Comprimentos naturais (ajusta conforme teu modelo físico)
         self.l1_natural = l1_natural * zoom
         self.l2_natural = l2_natural * zoom
 
@@ -54,7 +52,7 @@ class CreateScene(Scene):
                 # Se o bloco estiver longe, a mola “descola” da parede e fica colada no bloco
                 x_final = x_bloco
                 x_inicial = x_final - self.l1_natural
-            return criar_mola(x_inicial, x_final)
+            return criar_mola(x_inicial, x_final, n_espiras=3)
 
         # Mesmo raciocínio para a mola direita
         def mola_direita_dinamica():
@@ -65,7 +63,7 @@ class CreateScene(Scene):
             else:
                 x_inicial = x_bloco
                 x_final = x_inicial + self.l2_natural
-            return criar_mola(x_inicial, x_final)
+            return criar_mola(x_inicial, x_final, n_espiras=3)
 
         mola_esq = always_redraw(mola_esquerda_dinamica)
         mola_dir = always_redraw(mola_direita_dinamica)

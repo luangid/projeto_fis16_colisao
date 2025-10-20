@@ -1,16 +1,49 @@
+
+"""
+k_aux = 0.0026
+mi = 0.2726
+kmag = 0.0011
+k1 = 62.4839
+k2 = 181.1594
+
+Qui-quadrado: 0.4240
+Grau de liberdade: 1055
+p-valor: 1.0000
+p-valor: 0.0004
+
+"""
+
+
 __constantes__ = {
-    "massa": .6328,
-    "k1": 50,
-    "k2": 50,
+   "massa": .6328,
+    "k1": 62.4839,
+    "k2":  181.1594,
     "La": .16,
     "Lb": .16,
-    "l1": .115,
-    "l2": .08,
-    "kmag": 2e-4, 
-    "mi": 0.1,
+    "l1": .10,
+    "l2": .04,
+    "kmag": 0.0001, 
+    "mi": 0.2726,
     "x_esq": 0, 
-    "x_dir": 0.94,
-    "k_aux": .001}
+    "x_dir": 0.88,
+    "k_aux": 0.0026
+    }
+
+__constantes__bkup = {
+   "massa": .6328,
+    "k1": 52.3246,
+    "k2": 198.1295,
+    "La": .16,
+    "Lb": .16,
+    "l1": .10,
+    "l2": .04,
+    "kmag": 0.0018, 
+    "mi": 0.2621,
+    "x_esq": 0, 
+    "x_dir": 0.88,
+    "k_aux": 0.0004
+    }
+
 
 def massa():
     return __constantes__.get("massa")
@@ -21,7 +54,7 @@ def k_mola_b():
     return __constantes__.get("k2") 
 def len_bloco_a():
     return __constantes__.get("La")
-def len_bloco_a():
+def len_bloco_b():
     return __constantes__.get("Lb")
 def len_mola_a():
     return __constantes__.get("l1")

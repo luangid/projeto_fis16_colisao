@@ -9,10 +9,10 @@ import numpy as np
 def criar_animacao(sol: SimpleNamespace):
     scene = CreateScene(sol.t, sol.y[0], sol.y[1],
                         len_bloco_a=len_bloco_a(),
-                        len_bloco_b=len_mola_b(),                        
-                        len_pista=x_esq(),
-                        l1_natural=len_mola_a,
-                        l2_natural=len_mola_b)
+                        len_bloco_b=len_bloco_b(),                        
+                        len_pista=x_dir(),
+                        l1_natural=len_mola_a(),
+                        l2_natural=len_mola_b())
     
     with tempconfig({"quality": "low_quality"}):
         scene.render()
@@ -25,23 +25,38 @@ def main():
 
     
     #MODELO 1:
-    xa = .03
-    xb = .4
-    va = 0
-    vb = 0
+    #Dados iniciais
+    
+    file_mola = "./experiment_files/data_mola.txt"
+
+    data_mola = get_sol(file_path=file_mola)
+
+    t_mola = (data_mola.y[1] - data_mola.y[1][0]) / 120
+    yA_mola = (data_mola.y[0]) * (0.1/125.1)
+    yB_mola = (data_mola.y[2]) * (0.1/125.1)
+
+    vA_mola = np.gradient(yA_mola, t_mola)
+    vB_mola = np.gradient(yB_mola, t_mola)
+    
+    xa = yA_mola[0]
+    xb = yB_mola[0]
+    va = vA_mola[0]
+    vb = vB_mola[0]
     data1 = [xa, xb, va, vb]
 
-    model1 = get_model_1()
+    t_final = t_mola[-1]
 
-    silumacao1 = Simulate(model=model1, inicial_data=data1, t_final=5, simulation_len=500, description = "simulacao1")
+    print(data1)
+
+    model1 = get_model_1()
+    silumacao1 = Simulate(model=model1, inicial_data=data1, t_final=t_final, simulation_len=550, description = "simulacao1")
     silumacao1.solveRK45()
 
-    # Cria e renderiza a cena
     data_sim1 = get_sol("./simulation_files/simulacao1.dat")
-
+    
 
     #----------------------Cria a animação -----------------------------------
-    #criar_animacao(data_sim1)
+    criar_animacao(data_sim1)
 
    
 
