@@ -12,8 +12,8 @@ file_mola = "./experiment_files/data_mola.txt"
 data_mola = get_sol(file_path=file_mola)
 
 t_mola = (data_mola.y[1] - data_mola.y[1][0]) / 120
-yA_mola = (data_mola.y[0] - data_mola.y[0][0]) * (0.1/125.1)
-yB_mola = (data_mola.y[2] - data_mola.y[0][0]) * (0.1/125.1)
+yA_mola = (data_mola.y[0]) * (0.1/123.1)
+yB_mola = (data_mola.y[2]) * (0.1/125.1)
 
 vA_mola = np.gradient(yA_mola, t_mola)
 vB_mola = np.gradient(yB_mola, t_mola)

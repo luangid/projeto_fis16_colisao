@@ -11,6 +11,8 @@ import numpy as np
 from src.simulate import *
 from src.my_models import *
 
+incerteza = 0.005
+
 file_mola = "./experiment_files/data_mola.txt"
 file_ima = "./experiment_files/data_ima.txt"
 
@@ -46,24 +48,25 @@ k2 = 74.4762
 """
 
 __constantes__ = {
-   "massa": .6328,
-    "k1": 52.3246,
-    "k2": 198.1295,
+     "massa": .6328,
+    "k1": 68.21074904300337,
+    "k2":  157.42099589097114,
     "La": .16,
     "Lb": .16,
     "l1": .10,
     "l2": .04,
-    "kmag": 0.0018, 
-    "mi": 0.2621,
+    "kmag": 2.7752704293985674e-4, 
+    "mi_a": 0.2379899045971531,
+    "mi_b": 0.20554018836745902,
     "x_esq": 0, 
     "x_dir": 0.88,
-    "k_aux": 0.0004
+    "k_aux": 0.0009260980618977439
     }
 
 
-p0 = [__constantes__.get("k_aux"), __constantes__.get("mi"),  __constantes__.get("kmag"),  __constantes__.get("k1"),  __constantes__.get("k2")]
+p0 = [__constantes__.get("k_aux"), __constantes__.get("mi_a"),  __constantes__.get("mi_b"),  __constantes__.get("kmag"),  __constantes__.get("k1"),  __constantes__.get("k2")]
 
-def model1(t, data_inicio, k_aux, mi, kmag, k1, k2):
+def model1(t, data_inicio, k_aux, mi_a, mi_b, kmag, k1, k2):
 
     xa, xb, va, vb = data_inicio
 
@@ -73,7 +76,7 @@ def model1(t, data_inicio, k_aux, mi, kmag, k1, k2):
                 return 0
             return -k*(x + x_lim - l) + k_aux/(x + x_lim)                                                                
     
-    def f_atrito(v) -> float:
+    def f_atrito(v, mi) -> float:
         return -v*mi
     
     def f_magnetica(xa, xb) -> float:
@@ -84,21 +87,21 @@ def model1(t, data_inicio, k_aux, mi, kmag, k1, k2):
     
 
     acel_a = f_mola(xa, __constantes__.get("l1"), __constantes__.get("x_esq"), k1)
-    acel_a += f_atrito(va)
+    acel_a += f_atrito(va, mi_a)
     acel_a += f_magnetica(xa, xb)
     acel_a /= __constantes__.get("massa")
 
     acel_b = -f_mola(-xb, __constantes__.get("l2"), __constantes__.get("x_dir"), k2)
-    acel_b += f_atrito(vb)
+    acel_b += f_atrito(vb, mi_b)
     acel_b += -f_magnetica(xa, xb)
     acel_b /= __constantes__.get("massa")
 
     return [va, vb, acel_a, acel_b]
 
-def model1_sim(t, k_aux, mi, kmag, k1, k2, data_inicio):
+def model1_sim(t, k_aux, mi_a, mi_b, kmag, k1, k2, data_inicio):
     def sistema(t, y):
         xa, xb, va, vb = y
-        return model1(t, (xa, xb, va, vb), k_aux, mi, kmag, k1, k2)
+        return model1(t, (xa, xb, va, vb), k_aux, mi_a, mi_b, kmag, k1, k2)
     
     sol = solve_ivp(
         sistema,
@@ -119,8 +122,8 @@ def model1_sim(t, k_aux, mi, kmag, k1, k2, data_inicio):
         return np.full((4, len(t)), np.nan)
     return sol.y
 
-def modelo_fit(t, k_aux, mi, kmag, k1, k2):
-    sol = model1_sim(t, k_aux, mi, kmag, k1, k2, data1)
+def modelo_fit(t, k_aux, mi_a, mi_b, kmag, k1, k2):
+    sol = model1_sim(t, k_aux,  mi_a, mi_b, kmag, k1, k2, data1)
     # concatena posições dos dois blocos para comparar com dados experimentais
     xa_sim, xb_sim = sol[0], sol[1]
     return np.concatenate([xa_sim, xb_sim])
@@ -130,7 +133,7 @@ def modelo_fit(t, k_aux, mi, kmag, k1, k2):
 #-------------------------------------------------------------------------------------------------------
 y_total_exp = np.concatenate([yA_mola, yB_mola])
 
-tries = 10
+tries = 50
 
 """
 k_aux = 0.0487
@@ -141,8 +144,8 @@ k2 = 169.505
 """
 
 boundaries = (
-    [0, 0, 0, 0, 0],  # limites inferiores
-    [1.0, 1.0, 1.0, 300.0, 300.0]   # limites superiores
+    [0, 0, 0, 0, 0, 0],  # limites inferiores
+    [1.0, 1.0, 1.0, 1.0, 300.0, 300.0]   # limites superiores
 )
 
 params, covariance = curve_fit(
@@ -154,13 +157,14 @@ params, covariance = curve_fit(
         maxfev=5000)
 
 max_ite = 50
-tolerencia = 1e-4
+tolerencia = 1e-5
 
 y_sim_fit = modelo_fit(t_mola, *params)
 
-sigma = np.ones_like(y_sim_fit)
+
+sigma = np.ones_like(y_sim_fit) * incerteza
 chi2_val = np.sum(((y_total_exp - y_sim_fit) / sigma)**2)
-dof = len(y_total_exp) - len(params)  # 6 parâmetros: k_aux, mi, kmag, k1, k2, x_dir
+dof = len(y_total_exp) - len(params)  
 
 chi2_best = chi2_val
 params_best = params.copy()
@@ -171,7 +175,7 @@ cont = 0
 
 for i in range(max_ite):
     if chi2_val/dof < tolerencia:
-        print("Convergência atingida.")
+        print("Convergência atingida")
         break
     
     params, covariance = curve_fit(
@@ -184,15 +188,16 @@ for i in range(max_ite):
 
     y_sim_fit = modelo_fit(t_mola, *params)
 
-    sigma = np.ones_like(y_sim_fit)
     chi2_val = np.sum(((y_total_exp - y_sim_fit) / sigma)**2)
 
     if chi2_val < chi2_best:
+        print("Novo melhor Valor de Chi2")
         chi2_best = chi2_val
         params_best = params.copy()
         p0 = params_best
         cont = 0
     else:
+
         cont += 1
         scale = 0.005*cont
 
@@ -205,16 +210,17 @@ for i in range(max_ite):
 
 
 
-k_aux, mi, kmag, k1, k2 = params_best
-print(f"k_aux = {k_aux:.4f}")
-print(f"mi = {mi:.4f}")
-print(f"kmag = {kmag:.4f}")
-print(f"k1 = {k1:.4f}")
-print(f"k2 = {k2:.4f}")
-print(f"\nQui-quadrado: {chi2_val:.4f}")
+k_aux, mi_a, mi_b, kmag, k1, k2 = params_best
+print(f"k_aux = {k_aux}")
+print(f"mi_a = {mi_a}")
+print(f"mi_b = {mi_b}")
+print(f"kmag = {kmag}")
+print(f"k1 = {k1}")
+print(f"k2 = {k2}")
+print(f"\nQui-quadrado: {chi2_val}")
 print(f"Grau de liberdade: {dof}")
-print(f"p-valor: {p_val:.4f}")
-print(f"p-valor: {chi2_best/dof:.4f}")
+print(f"p-valor: {p_val}")
+print(f"chi/dof: {chi2_best/dof}")
 
 #print(f"Melhor chi2: {chi2_best:.4f} | chi2/dof: {chi2_best/dof:.4f}")
 
